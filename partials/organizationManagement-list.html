@@ -5,7 +5,7 @@
             <th>Actions</th>
         </tr>
         <tr ng:repeat="organization in data">
-            <td>{{organization.title}}</td>
+            <td><a href="#/organizationDetails/{{organization.id}}/">{{organization.title}}</a></td>
             <td>Edit | Delete</td>
         </tr>
     </table>

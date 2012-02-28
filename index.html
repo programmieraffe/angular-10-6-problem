@@ -23,9 +23,9 @@
         <script src="http://code.angularjs.org/angular-0.10.6.js" ng:autobind></script>
 
         <script type="text/javascript">
-            function MainCtrl($route, $location,$routeParams, $window){
+            function MainCtrl($route, $location,$routeParams, $window, $rootScope){
                 
-                console.log('MainCtrl triggered');
+                console.log('MainCtrl triggered',this,$rootScope);
                 
                 $route.when('',{
                     template: 'partials/home.html',
@@ -35,10 +35,17 @@
                     template: 'partials/organizationManagement.html',
                     //reloadOnSearch:false
                 });
+                
                 $route.when('/organizationManagement/:method/',{
                     template: 'partials/organizationManagement.html',
                     //reloadOnSearch:false
                 });
+                
+                 $route.when('/organizationDetails/:id/',{
+                    template: 'partials/organizationDetails.html',
+                    //reloadOnSearch:false
+                });
+                
                 
                 $route.when('/anotherPage/',{
                     template: 'partials/anotherPage.html',
@@ -51,29 +58,48 @@
                 
                 // I had routeOnchange in here in 09.19?
                 
-                $route.parent(this);  
+                //$route.parent($rootScope);  
             };
             MainCtrl.$inject = ['$route','$location','$routeParams','$window']
             
             function OrganizationManagementCtrl($route,$location,$routeParams){
-                
                 console.log('Organization Management Ctrl triggered');
+                
+                this.my_parent_value = 'Test-Title 123';
                 var method = $routeParams.method || 'list';
                 this.subtemplate = 'partials/organizationManagement-'+method+'.html';
-                $route.parent(this);  // will sett this scope to the default, so subclass can access it
+                //$route.parent($rootScope);  // will sett this scope to the default, so subclass can access it
     
             };
             OrganizationManagementCtrl.$inject = ['$route','$location','$routeParams'];
 
             function OrganizationManagementListCtrl($route,$location){
-                console.log('Organization Management Ctrl List triggered');
-                this.data = [{'title':'Organization 1'},{'title':'Organization 23 '}];
-                $route.parent(this);
+                console.log('Organization Management Ctrl List triggered',this.my_parent_value);
+                this.data = [{'title':'Organization 1','id':23},{'title':'Organization 2 ','id':24}];
+               // $route.parent(this);
             };
             OrganizationManagementListCtrl.$inject = ['$route','$location'];
             
+            function OrganizationDetailsCtrl($routeParams){
+                
+                console.log('Organization Details Ctrl',$routeParams);
+                this.organizationDetails = {};
+                this.organizationDetails.parent_member_count = 23;
+                
+                this.subtemplate = 'partials/organizationDetails-view.html';  
+            }
+            OrganizationDetailsCtrl.$inject = ['$routeParams'];
+            
+            function OrganizationDetailsViewCtrl($routeParams){
+                
+                this.organization_id = $routeParams.id;
+                this.organizationDetails.member_count = 667;
+                
+            };
+            OrganizationDetailsViewCtrl.$inject = ['$routeParams'];
+            
             function AnotherPageCtrl($route,$location){
-                console.log('Another Page Ctrl triggered');
+                console.log('Another Page Ctrl triggered',this.my_parent_value);
             }
             AnotherPageCtrl.$inject = ['$route','$location'];
             
