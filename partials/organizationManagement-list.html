@@ -1,0 +1,12 @@
+<div ng:controller="OrganizationManagementListCtrl">
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Actions</th>
+        </tr>
+        <tr ng:repeat="organization in data">
+            <td>{{organization.title}}</td>
+            <td>Edit | Delete</td>
+        </tr>
+    </table>
+</div>

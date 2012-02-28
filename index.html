@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:ng="http://angularjs.org/" ng:app> <!-- ng:app="MyApp" -->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Angular 10.6 Problems</title>
+    </head>
+    <body ng:controller="MainCtrl" >
+        <div id="wrap">
+            <div id="menu">
+                <ul>
+                    <li><a href="#/organizationManagement/">Organizations</a></li>
+                    <li><a href="#/anotherPage/">Another Page</a></li>
+                </ul>
+            </div>
+            <div id="content">
+                <div id="content_page">
+                    <ng:view></ng:view>
+                </div> 
+            </div>
+        </div>
+        
+        <script src="lib/jquery/jquery.js"></script> <!-- jquery 1.6 -->
+        <script src="http://code.angularjs.org/angular-0.10.6.js" ng:autobind></script>
+
+        <script type="text/javascript">
+            function MainCtrl($route, $location,$routeParams, $window){
+                
+                console.log('MainCtrl triggered');
+                
+                $route.when('',{
+                    template: 'partials/home.html',
+                });
+                
+                $route.when('/organizationManagement/',{
+                    template: 'partials/organizationManagement.html',
+                    //reloadOnSearch:false
+                });
+                $route.when('/organizationManagement/:method/',{
+                    template: 'partials/organizationManagement.html',
+                    //reloadOnSearch:false
+                });
+                
+                $route.when('/anotherPage/',{
+                    template: 'partials/anotherPage.html',
+                    //reloadOnSearch:false
+                });
+                
+                $route.otherwise({
+                    template:'partials/error_not_found.html'
+                });
+                
+                // I had routeOnchange in here in 09.19?
+                
+                $route.parent(this);  
+            };
+            MainCtrl.$inject = ['$route','$location','$routeParams','$window']
+            
+            function OrganizationManagementCtrl($route,$location,$routeParams){
+                
+                console.log('Organization Management Ctrl triggered');
+                var method = $routeParams.method || 'list';
+                this.subtemplate = 'partials/organizationManagement-'+method+'.html';
+                $route.parent(this);  // will sett this scope to the default, so subclass can access it
+    
+            };
+            OrganizationManagementCtrl.$inject = ['$route','$location','$routeParams'];
+
+            function OrganizationManagementListCtrl($route,$location){
+                console.log('Organization Management Ctrl List triggered');
+                this.data = [{'title':'Organization 1'},{'title':'Organization 23 '}];
+                $route.parent(this);
+            };
+            OrganizationManagementListCtrl.$inject = ['$route','$location'];
+            
+            function AnotherPageCtrl($route,$location){
+                console.log('Another Page Ctrl triggered');
+            }
+            AnotherPageCtrl.$inject = ['$route','$location'];
+            
+        </script>
+
+    </body>
+</html>
