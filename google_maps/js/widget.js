@@ -1,47 +1,55 @@
+ 
 // ui:map widget
 // Google Maps API v. 3.5
 // by https://github.com/twarogowski/angular-contrib/blob/master/js/angular-widgets.js
 // 2DO: make point handling in controller not in widget?
+// modified for 10.6
 angular.widget('ui:map', function(el) {
+    
     if(!google || !google.maps)
         return;
-    var compiler = this;
-    var elem = el;
-    var pinExpr = widgetUtils.parseAttrExpr(el, 'ui:pin');
-    var viewExpr = widgetUtils.parseAttrExpr(el, 'ui:view');
-    
-    // BY MA
-    var pointsExpr = widgetUtils.parseAttrExpr(el,'ui:points');    
-    // EO MA
-    
-    var defaults = {
-        bindZoom : false, 
-        bindMapType: false, 
-        center: {
-            lat:0, 
-            lng:0
-        }, 
-        pinDraggable: true, 
-        map: {
-            zoom: 4, 
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
-    };
-    var options = widgetUtils.getOptions(el, defaults);
-    defaults.map.center = new google.maps.LatLng(defaults.center.lat, defaults.center.lng);
-    
-    return function(el) {
         
-        // 2DO: set it here? good idea?
+    var compiler = this;    
+    
+    
+    function instanceFn(widgetUtils) {
+        
+        
+        var elem = el;
+        var pinExpr = widgetUtils.parseAttrExpr(el, 'ui:pin');
+        var viewExpr = widgetUtils.parseAttrExpr(el, 'ui:view');
+    
+        // BY MA
+        var pointsExpr = widgetUtils.parseAttrExpr(el,'ui:points');    
+        // EO MA
+    
+        var defaults = {
+            bindZoom : false, 
+            bindMapType: false, 
+            center: {
+                lat:0, 
+                lng:0
+            }, 
+            pinDraggable: true, 
+            map: {
+                zoom: 4, 
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            }
+        };
+        var options = widgetUtils.getOptions(el, defaults);
+        defaults.map.center = new google.maps.LatLng(defaults.center.lat, defaults.center.lng);
+        
+        // set it here? good idea?
         var currentScope = this;
         
+        console.log('UI:MAP current scope',currentScope);
         $(elem).append('<div/>')
         var div = ('div', elem).get(0);
         var map = new google.maps.Map(div,options.map);	
         var marker = new google.maps.Marker({
             position: map.center, 
             map: map,
-            icon:'img/mapicons/symbol_plus.png'
+            icon:'img/mapicons/symbol_plus.png' //2DO: use base path?
         });
         marker.setDraggable(options.pinDraggable);
 
@@ -50,8 +58,8 @@ angular.widget('ui:map', function(el) {
         // EO BY MA
         
         google.maps.event.addListener(map, 'click', function(e) {
-
-            console.log('Map was clicked',e);
+            
+            console.log('click map');
             
             marker.setPosition(e.latLng);
             marker.setVisible(true);
@@ -62,6 +70,7 @@ angular.widget('ui:map', function(el) {
                 lng:e.latLng.lng()
             });
             widgetUtils.setValue(currentScope, pinExpr, o);
+            console.log('calling widgetutils to setValue of ',pinExpr,'to',o,'in scope',currentScope);
         });
   	
         google.maps.event.addListener(marker, 'dragend', function(e) {
@@ -97,7 +106,8 @@ angular.widget('ui:map', function(el) {
             });
 
         if(defaults.bindMapType)
-            google.maps.event.addListener(map, 'maptypeid_changed', function() {
+            console.log('bind map type...');
+        google.maps.event.addListener(map, 'maptypeid_changed', function() {
             var t = map.getMapTypeId();	
             var o = widgetUtils.getValue(currentScope, viewExpr) || {};
             $.extend(o, {
@@ -244,6 +254,14 @@ angular.widget('ui:map', function(el) {
                
                 markerPOI.setMap(map);  // To add the marker to the map, call setMap();
             }
+            
+            
+            
+        // 2DO: optimized version: (initRun abfragen?)
+        // 2DO: check which marker was removed            
+        // 2DO: check which marker was added
+            
+            
         }, null, true);
         // EO BY MA
         
@@ -263,102 +281,10 @@ angular.widget('ui:map', function(el) {
             }, null, true);
             
         map.setZoom(options.map.zoom);
+        
     
-    };
-});
-
-// handy widgets functions
-// by https://github.com/twarogowski/angular-contrib/blob/master/js/angular-widgets.js
-var widgetUtils = {
-    highlight: function(term, text){
-        if(!text)
-            return null;
-        var rx = new RegExp("("+$.ui.autocomplete.escapeRegex(term)+")", "ig" );
-        return text.replace(rx, "<strong>$1</strong>");
-    },
-    noHighlight: function(term, text){
-        return text;
-    },
-    getOptions : function (el, defaults, attrName){
-        attrName = attrName || 'ui:options';
-        var opts = $(el).attr(attrName);
-        defaults = defaults || {};
-        if(!opts)
-            return defaults;
-        var options = angular.fromJson('['+opts+']')[0];	
-        return $.extend(defaults, options);
-    },
-    parseExpr: function(val){
-        if(!val || val=='')
-            return null;
-        var expr = {
-            formatters:[]
-        };
-        var pts = val.split('|');
-        expr.expression = pts[0];
-        if(pts.length==1)
-            return expr;
-        for (var i = 0; i < pts.length; i++){
-            var args = pts[i].split(':');
-            var name = args.shift();
-            var frmt = angular.formatter[name];
-            if(frmt)
-                expr.formatters.push({
-                    name: name, 
-                    parse: frmt.parse, 
-                    format: frmt.format, 
-                    arguments: args
-                });
-        }
-        return expr;
-    },
-    parseAttrExpr: function (el, attrName){
-        if(!attrName)
-            return null;
-        var attr = $(el).attr(attrName);
-        return this.parseExpr(attr);	
-    },
-    setValue: function (scope, attrExpr, value){
-        if(!attrExpr || !attrExpr.expression)
-            return;
-        var v = value;
-        v = this.parseValue(v, attrExpr, scope);	
-        // WAS IN 09.19:
-        //scope.$set(attrExpr.expression, v);
-        // NOW IN 10.6. CHANGED BY MYSELF:
-        scope.$apply(scope[attrExpr.expression] = v);
-    },
-    getValue: function (scope, attrExpr){
-        console.log('get value - scope',scope,attrExpr);
-        if(!attrExpr || !attrExpr.expression)
-            return null;
-        // WAS IN 09.19: 
-        // val = scope.$get(attrExpr.expression);
-        // NOW CHANGE FOR 10.6:
-        var val = scope[attrExpr.expression];
-        val = this.formatValue(val, attrExpr, scope);
-        return val;
-    },
-    parseValue: function (value, attrExpr, scope){
-        if(!attrExpr || !attrExpr.formatters || attrExpr.formatters.length==0)
-            return value;
-        var v = value;	
-        for (var i = 0; i < attrExpr.formatters.length; i++) {
-            var fm = attrExpr.formatters[i];
-            if(fm && fm.parse)
-                v = fm.parse.apply(scope, [v].concat(fm.arguments));
-        };
-        return v;	
-    },
-    formatValue: function (value, attrExpr, scope){
-        if(!attrExpr || !attrExpr.formatters || attrExpr.formatters.length==0)
-            return value;
-        var v = value;	
-        for (var i = 0; i < attrExpr.formatters.length; i++) {
-            var fm = attrExpr.formatters[i];
-            if(fm && fm.format)
-                v = fm.format.apply(scope, [v].concat(fm.arguments));
-        };
-        return v;
     }
-};
+    instanceFn.$inject = ['widgetUtils'];
+    return instanceFn;
+
+});
