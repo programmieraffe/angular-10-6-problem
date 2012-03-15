@@ -12,7 +12,7 @@ angular.widget('ui:map', function(el) {
     var compiler = this;    
     
     
-    function instanceFn(widgetUtils) {
+    function instanceFn(widgetUtils,elem) {
         
         
         var elem = el;
@@ -70,6 +70,9 @@ angular.widget('ui:map', function(el) {
                 lng:e.latLng.lng()
             });
             widgetUtils.setValue(currentScope, pinExpr, o);
+            
+            $parse(pinExpr.expression).assign(currentScope,o);
+            
             console.log('calling widgetutils to setValue of ',pinExpr,'to',o,'in scope',currentScope);
         });
   	
