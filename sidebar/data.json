@@ -1,0 +1,52 @@
+{
+    "organizations": {
+        "1": {
+            "title": "Organization 1",
+            "id": "1",
+            "projects": {
+                "23": {
+                    "id": "23",
+                    "title": "Project 23",
+                    "organization_id":1,
+                    "folders": {
+                        "44": {
+                            "id": "44",
+                            "title": "Subfolder 1",
+                            "project_id":"23"
+                        }
+                    }
+                },
+                "28": {
+                    "title": "Project 28",
+                    "organization_id":"1",
+                    "id": "28",
+                    "folders": {
+                        "45": {
+                            "id": "45",
+                            "title": "Subfolder 45",
+                            "project_id":"28"
+                        }
+                    }
+                }
+            }
+        },
+        "12": {
+            "title": "Organization 12",
+            "id": "12",
+            "projects": {
+                "87": {
+                    "id": "87",
+                    "organization_id":12,
+                    "title": "Project 87",
+                    "folders": {
+                        "49": {
+                            "id": "49",
+                            "title": "Subfolder 1",
+                            "project_id":"87"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

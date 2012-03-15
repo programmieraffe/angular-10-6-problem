@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:ng="http://angularjs.org/" ng:app> 
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Angular 10.6 - Sidebar</title>
+        <style type="text/css">
+            h1 { margin: 10px 0 4px; font-weight: bold; }
+            h2 { color: red; }
+            p { font-size: 80%; }
+            body { font-family: helvetica }
+            .boxes { float: left; margin-right: 10px; }
+            .clear { overflow: auto; }
+            li.organization{padding-left5px;color:red;}
+            li.project {padding-left:10px;color:blue;}
+            li.folder {padding-left:15px;color:green;}
+            p.active{background-color:yellow;}
+            div.content{border:1px dashed black;width:75%;float:right;}
+        </style>
+    </head>
+    <body>
+        <div ng:controller="MainCtrl">
+
+            Current path: {{$location.path()}} <br />
+            <br />
+            Load via inside link:<br />
+            <a href="#/">Start</a><br />
+            <a href="#/organization/1/">organization/1/</a><br />
+            <a href="#/project/23/">project/23/</a><br />
+            <a href="#/folder/45/">folder/45/</a><br />
+
+            <br>
+            <p>Try reload the page to see if active state stays correct</p>
+
+            <br />
+            <br />
+            <br />
+
+            <div class="sidebar" id="sidebar" style="float:left;width:20%">
+                <h2>Sidebar</h2>
+                <ul>
+                    <li class="organization" ng:repeat="organization in data.organizations" ng:click="selectOrganization(organization.id)" data-organizationId='{{organization.id}}'><p>{{organization.title}} (Id: {{organization.id}})</p>
+                        <ul>
+                            <li class="project" ng:repeat="project in organization.projects" data-projectId='{{project.id}}' ng:click="selectProject(project.id)"><p>{{project.title}} (Id: {{project.id}})</p>
+                                <ul>
+                                    <li class="folder" ng:repeat="folder in project.folders" data-folderId='{{folder.id}}' ng:click="selectFolder(folder.id)"><p>{{folder.title}} (Id: {{folder.id}})</p></li>
+                                </ul>                   
+                            </li>
+                        </ul>
+                    </li> 
+                </ul>
+            </div>
+            <div class="content"><h2>View</h2>
+                <ng:view></ng:view>    
+            </div>
+        </div>
+
+
+        <script src="lib/jquery/jquery.js"></script> <!-- jquery 1.6 -->
+        <script src="http://code.angularjs.org/angular-0.10.6.js" ng:autobind></script>
+        <script type="text/javascript">
+            function MainCtrl($location, $route, $routeParams,$resource) {
+                console.log($route);
+                
+                var self=this;
+                
+                this.$location = $location;
+    
+                $route.when('', {
+                    controller: TestCtrl,
+                    template: 'template-content.html'
+                });
+                $route.when('/', {
+                    controller: TestCtrl,
+                    template: "template-content.html"
+                });
+                $route.when('/:module/:id/', {
+                    controller: TestCtrl,
+                    template: "template-content.html"
+                });
+
+                var Data = $resource('data.json');                
+                this.data = Data.get();
+                
+                this.$on('$afterRouteChange', function(current,previous){
+                    self.routeChanged(current,previous);
+                });
+            
+                this.routeChanged = function(current, previous) {
+                    console.log('route change triggered', current,previous);
+                    console.log('Is this.data available? ',self.data,typeof self.data);
+                    // route path changed - either via URL page load or via deep linking in organization        
+                    
+                    // remove active state everywhere
+                    $('li > p.active').removeClass('active');
+                        
+                    if($routeParams.module !== undefined){
+                        var module = $routeParams.module;
+                        var id = $routeParams.id;
+                        // find the active element via jquery:
+                        var el = $('#sidebar').find('li[data-'+module+'Id='+id+'] > p:first');
+                        
+                        if(el.length == 0)
+                        {
+                            console.error('Could not find element to mark as active in DOM');
+                            return;
+                        }
+                        
+                        el.addClass('active');
+                    
+                    }
+                }
+                
+                this.selectOrganization = function(id)
+                {
+                    $location.path('/organization/'+id+'/');
+                }
+                this.selectProject= function(id)
+                {
+                    $location.path('/project/'+id+'/');
+                }
+                this.selectFolder= function(id)
+                {
+                    $location.path('/folder/'+id+'/');
+                }
+            }
+            
+            function TestCtrl($location, $route, $routeParams,$rootScope) {
+                this.module = $routeParams.module || "-";
+                this.id = $routeParams.id || "-";
+            }
+
+        </script>
+    </body>
+</html>
